@@ -5,11 +5,19 @@ import pandas as pd
 import numpy as np
 import time
 
-cuisines = ['italian','indian', 'asian','british','american','chinese','korean']
-dietary= ['vegetarian','vegan', 'gluten-free','nut-free','healthy']
+cuisines = ['afghan', 'african', 'american','australian', 'asian','austrian',
+            'azerbaijan', 'balinese', 'belgian','brazilian','british','cajun-creole',
+            'caribbean', 'chinese','cuba','danish', 'dinner', 'eastern-european', 'egyptian', 'english',
+            'finland','french', 'german', 'greek', 'hungarian', 'indian', 'indonesian', 'irish', 'italian', 'jamaican',
+            'japanese', 'jewish', 'korean', 'latin-american', 'lithuanian', 'mediterranean', 'mexican',
+            'middle-eastern', 'moroccan', 'nepalese', 'nigerian', 'north-african', 'persian', 'peruvian', 'polish', 'portuguese',\
+            'scandinavian', 'senegalese', 'scottish', 'southern-soul', 'spanish', 'swedish', 'swiss',
+            'taiwanese', 'thai', 'tunisian', 'turkish', 'ukrainian', 'vietnamese', 'welsh', 'balkan', 'czech', 'czech-cuisine']
+
+dietary= ['vegetarian','vegan', 'gluten-free','nut-free','healthy', 'dairy-free', 'egg-free', 'low-calorie', 'low-sugar',
+          'high-protein', 'low-fat', 'high-fibre', 'keto', 'low-carb']
 
 base_url= 'https://www.bbcgoodfood.com/search?tab=recipe'
-
 
 
 def preference_based_search(preference):
@@ -23,11 +31,15 @@ def preference_based_search(preference):
         url=base_url
     return url
 
-def category_specific_links(preference, page_range=50):
+def category_specific_links(preference, page_range=43):
     '''Given a URL for a category search in BBC GoodFood,
     return a list of specific links for each recipe from
     the categorical search'''
-    recipe_links = []
+
+    if preference in ['vegetarian','healthy', 'gluten-free','british']:
+        page_range=205
+
+    recipe_links =[]
     for num in range(1, page_range):
         try:
             search_url = preference_based_search(preference) + f'&page={num}'
@@ -197,7 +209,7 @@ def load_data():
         df['preference']=cuisine
         all_df_lst.append(df)
 
-    final_df = pd.concat(all_df_lst)
+    # final_df = pd.concat(all_df_lst)
 
     print("Scraping dietary recipes from BBC Good Foods")
 
