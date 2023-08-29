@@ -1,2 +1,4 @@
 raw_data/
 .env
+.DS_store
+*Zone.Identifier
