@@ -28,7 +28,7 @@ def category_specific_links(preference, page_range=200):
     return a list of specific links for each recipe from
     the categorical search'''
     recipe_links = []
-    for num in range(1,page_range):
+    for num in range(1, page_range):
         try:
             search_url = preference_based_search(preference) + f'&page={num}'
             response = requests.get(search_url)
