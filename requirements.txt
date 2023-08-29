@@ -1,9 +1,16 @@
+#coding stuff
 pytest
 pylint
 ipdb
 jupyterlab
+
+#python math libs
 numpy
 pandas
+
+#graphoing/visuals
 matplotlib
 seaborn
+
+#modelling
 scikit-learn
