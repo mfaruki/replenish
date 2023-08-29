@@ -14,8 +14,8 @@ cuisines = ['afghan', 'african', 'american','australian', 'asian','austrian',
             'scandinavian', 'senegalese', 'scottish', 'southern-soul', 'spanish', 'swedish', 'swiss',
             'taiwanese', 'thai', 'tunisian', 'turkish', 'ukrainian', 'vietnamese', 'welsh', 'balkan', 'czech', 'czech-cuisine']
 
-dietary= ['vegetarian','vegan', 'gluten-free','nut-free','healthy', 'dairy-free', 'egg-free', 'low-calorie', 'low-sugar',
-          'high-protein', 'low-fat', 'high-fibre', 'keto', 'low-carb']
+# dietary= ['vegetarian','vegan', 'gluten-free','nut-free','healthy', 'dairy-free', 'egg-free', 'low-calorie', 'low-sugar',
+#           'high-protein', 'low-fat', 'high-fibre', 'keto', 'low-carb']
 
 base_url= 'https://www.bbcgoodfood.com/search?tab=recipe'
 
@@ -25,8 +25,8 @@ def preference_based_search(preference):
     is specific to the input category/preference.'''
     if preference in cuisines:
         url= f'{base_url}&cuisine={preference}'
-    elif preference in dietary:
-        url= f'{base_url}&diet={preference}'
+    # elif preference in dietary:
+    #     url= f'{base_url}&diet={preference}'
     else:
         url=base_url
     return url
@@ -36,8 +36,11 @@ def category_specific_links(preference, page_range=43):
     return a list of specific links for each recipe from
     the categorical search'''
 
-    if preference in ['vegetarian','healthy', 'gluten-free','british']:
-        page_range=205
+    # if preference in ['vegetarian','healthy', 'gluten-free','british']:
+    #     page_range=205
+
+    if preference == 'british':
+        page_range = 160
 
     recipe_links =[]
     for num in range(1, page_range):
@@ -48,7 +51,7 @@ def category_specific_links(preference, page_range=43):
             for link in soup.find_all("a", class_="link d-block"):
                 recipe_links.append(f'https://www.bbcgoodfood.com/recipes{link["href"]}')
         except:
-            recipe_links.append('none')
+            recipe_links.append('n')
 
     valid_link =[]
     for link in recipe_links:
@@ -210,13 +213,13 @@ def load_data():
         all_df_lst.append(df)
 
     # final_df = pd.concat(all_df_lst)
+    print('Scraping done')
+    # print("Scraping dietary recipes from BBC Good Foods")
 
-    print("Scraping dietary recipes from BBC Good Foods")
-
-    for diet in dietary:
-        df = category_bbc_data(diet)
-        df['preference']=diet
-        all_df_lst.append(df)
+    # for diet in dietary:
+    #     df = category_bbc_data(diet)
+    #     df['preference']=diet
+    #     all_df_lst.append(df)
 
     final_df = pd.concat(all_df_lst)
 
