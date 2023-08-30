@@ -1,3 +1,9 @@
+#Preprocessing functions
 
-#preprocessing_pipe= Pipeline(steps=[('step1', df['--'].map(lambda x: time_cleaner(x)),
-               # ('step2', GaussianNB())])
+
+
+
+def preprocessing(model_dataframe):
+
+
+    return model_dataframe
