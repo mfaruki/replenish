@@ -1,3 +1,9 @@
+#Preprocessing functions
 
-def preproc_pipeline(model):
-    
+
+
+
+def preprocessing(model_dataframe):
+
+
+    return model_dataframe
