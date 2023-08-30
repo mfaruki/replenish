@@ -14,8 +14,8 @@ cuisines = ['afghan', 'african', 'american','australian', 'asian','austrian',
             'scandinavian', 'senegalese', 'scottish', 'southern-soul', 'spanish', 'swedish', 'swiss',
             'taiwanese', 'thai', 'tunisian', 'turkish', 'ukrainian', 'vietnamese', 'welsh', 'balkan', 'czech', 'czech-cuisine']
 
-# dietary= ['vegetarian','vegan', 'gluten-free','nut-free','healthy', 'dairy-free', 'egg-free', 'low-calorie', 'low-sugar',
-#           'high-protein', 'low-fat', 'high-fibre', 'keto', 'low-carb']
+dietary= ['vegetarian','vegan', 'gluten-free','nut-free','healthy', 'dairy-free', 'egg-free', 'low-calorie', 'low-sugar',
+           'high-protein', 'low-fat', 'high-fibre', 'keto', 'low-carb']
 
 base_url= 'https://www.bbcgoodfood.com/search?tab=recipe'
 
@@ -126,7 +126,7 @@ def category_bbc_data(preference):
         #servings
         try:
             serving = soup.find("div", class_= "icon-with-text post-header__servings body-copy-small body-copy-bold icon-with-text--aligned").find("div", class_= "icon-with-text__children").string
-        #servings_int = int(serving.strip('Serves '))
+
             servings.append(serving)
         except:
             servings.append("None")
@@ -137,7 +137,6 @@ def category_bbc_data(preference):
             description.append(tagline)
         except:
             description.append('n')
-
 
         #difficulty level
         try:
@@ -200,10 +199,6 @@ def load_data():
     '''merging the dataframes together for the entire dataframe used in
     the replenish modelling and project'''
 
-    # column_names = ['recipe_title','stars','prep_times','cooking_times', 'review_count',
-    #                  'difficulty_level','servings','description', 'specific_ingredients' 'ingredients', 'preference']
-    # final_df = pd.DataFrame(columns=column_names)
-
     print("Scraping cuisines from BBC Good Foods")
     all_df_lst = []
 
@@ -212,14 +207,14 @@ def load_data():
         df['preference']=cuisine
         all_df_lst.append(df)
 
-    # final_df = pd.concat(all_df_lst)
     print('Scraping done')
-    # print("Scraping dietary recipes from BBC Good Foods")
 
-    # for diet in dietary:
-    #     df = category_bbc_data(diet)
-    #     df['preference']=diet
-    #     all_df_lst.append(df)
+    print("Scraping dietary recipes from BBC Good Foods")
+
+    for diet in dietary:
+         df = category_bbc_data(diet)
+         df['preference']=diet
+         all_df_lst.append(df)
 
     final_df = pd.concat(all_df_lst)
 
