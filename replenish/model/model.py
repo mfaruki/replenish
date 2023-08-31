@@ -3,6 +3,7 @@ from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import LatentDirichletAllocation
@@ -55,37 +56,48 @@ def k_means(df, name_of_ingredient_column='ingredients', clusters=10):
 
 # LDA MODEL
 
-def LDA_model(df, min_df = 0.005, n_components = 10, max_iter = 100):
+def LDA_model(df, ingredient_column = 'ingredients', preference_column = 'preference', max_df = 0.99, min_df = 0.0001, n_components = 10, max_iter = 100):
 
     """Returns modelled_df of recipes, each with their respective 'Topic' cluster and weights per topic.
     Also returns a dictionary of sorted_ingredients and sorted_cuisines per cluster
-    Ensure that the ingredients columns regards lists of ingredients and df has 'cuisine' column.
+    Ensure that the ingredients columns regards lists of ingredients and df has 'preference' column.
     eg. df[ingredients][0] = [black beans, russet potatoes, green onions, r...]"""
 
     # Step 1 = Preprocess ingredients list into an 'ingredient sentence' for vectorising
-    df['clean_text']=df['ingredients'].map(lambda x: model_specific_preprocessing(x))
+    df['clean_text']=df[ingredient_column].map(lambda x: model_specific_preprocessing(x))
 
     # Step 2 = TfidfVectorizer which convert each recipe's 'ingredient sentence' into a matrix of weights
-    tf_idf_vectorizer = TfidfVectorizer(min_df=min_df)
-    weighted_words = pd.DataFrame(tf_idf_vectorizer.fit_transform(df['clean_text']).toarray(), columns = tf_idf_vectorizer.get_feature_names_out())
+    count_vectorizer = CountVectorizer(max_df = max_df, min_df=min_df)
+    counted_words = pd.DataFrame(count_vectorizer.fit_transform(df['clean_text']).toarray(), columns = count_vectorizer.get_feature_names_out())
 
     # Step 3 - LDA model which fits the model and assigns each recipe to its 'best topic'
-    lda_model = LatentDirichletAllocation(n_components=n_components, max_iter = max_iter)
-    lda_model.fit(weighted_words)
-    document_topic_mixture = lda_model.transform(weighted_words)
+    lda_model = LatentDirichletAllocation(n_components=n_components, max_iter = max_iter, random_state=0)
+    lda_model.fit(counted_words)
+    document_topic_mixture = lda_model.transform(counted_words)
     topics = pd.DataFrame(document_topic_mixture)
     most_freq = topics.idxmax(axis=1)
     most_freq.name = "Topic"
-    modelled_df = topics.join(most_freq).join(df['ingredients'])
+    modelled_df = topics.join(most_freq).join(df[ingredient_column]).join(df[preference_column])
 
     # Step 4 - Dictionary of sorted_ingredients and sorted_cuisines
-    topic_mixture = pd.DataFrame(lda_model.components_,columns = tf_idf_vectorizer.get_feature_names_out())
+    topic_mixture = pd.DataFrame(lda_model.components_,columns = count_vectorizer.get_feature_names_out())
     n_components = topic_mixture.shape[0]
     sorted_ingredients, sorted_cuisines = {}, {}
     for topic in range(n_components):
         topic_df = topic_mixture.iloc[topic].sort_values(ascending = False)
         sorted_ingredients[f'Topic {topic}'] = topic_df
-        cuisine_df = df[df['Topic'] == topic].groupby('cuisine').count()['Topic'].sort_values(ascending = False)
+        cuisine_df = modelled_df[modelled_df['Topic'] == topic].groupby(preference_column).count()['Topic'].sort_values(ascending = False)
         sorted_cuisines[f'Topic {topic}'] = cuisine_df
 
     return modelled_df, sorted_ingredients, sorted_cuisines
+
+# Convert recipe string to list
+
+def ing_list(sample_txt):
+    elements = []
+    for punc in string.punctuation:
+        sample_txt = sample_txt.replace(punc,'')
+    for word in sample_txt.split():
+        elements.append(str(word))
+    return elements
+#df['fi2'] = df['final_ingredients'].apply(ing_list)
