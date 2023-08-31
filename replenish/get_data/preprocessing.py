@@ -1,8 +1,5 @@
 #Preprocessing functions
 
-
-
-
 def preprocessing(model_dataframe):
 
 

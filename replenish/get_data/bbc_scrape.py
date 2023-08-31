@@ -182,6 +182,7 @@ def category_bbc_data(preference):
         'ingredients':only_ingredients
     }
 
+
     #Dictionary to dataframe
     df = pd.DataFrame.from_dict(category_dictionary)
 
