@@ -3,31 +3,46 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 import numpy as np
-from time import sleep
+import time
 
-cuisines = ['italian','indian'] #,'asian','british','american','chinese']
-dietary= ['vegetarian','vegan'] #, 'gluten-free','nut-free','healthy']
+cuisines = ['afghan', 'african', 'american','australian', 'asian','austrian',
+            'azerbaijan', 'balinese', 'belgian','brazilian','british','cajun-creole',
+            'caribbean', 'chinese','cuba','danish', 'dinner', 'eastern-european', 'egyptian', 'english',
+            'finland','french', 'german', 'greek', 'hungarian', 'indian', 'indonesian', 'irish', 'italian', 'jamaican',
+            'japanese', 'jewish', 'korean', 'latin-american', 'lithuanian', 'mediterranean', 'mexican',
+            'middle-eastern', 'moroccan', 'nepalese', 'nigerian', 'north-african', 'persian', 'peruvian', 'polish', 'portuguese',\
+            'scandinavian', 'senegalese', 'scottish', 'southern-soul', 'spanish', 'swedish', 'swiss',
+            'taiwanese', 'thai', 'tunisian', 'turkish', 'ukrainian', 'vietnamese', 'welsh', 'balkan', 'czech', 'czech-cuisine']
+
+dietary= ['vegetarian','vegan', 'gluten-free','nut-free','healthy', 'dairy-free', 'egg-free', 'low-calorie', 'low-sugar',
+           'high-protein', 'low-fat', 'high-fibre', 'keto', 'low-carb']
 
 base_url= 'https://www.bbcgoodfood.com/search?tab=recipe'
 
 
-
-def preference_based_search(preference=None):
+def preference_based_search(preference):
     '''Return a url for a BBC GoodFood search that
     is specific to the input category/preference.'''
     if preference in cuisines:
         url= f'{base_url}&cuisine={preference}'
-    elif preference in dietary:
-        url= f'{base_url}&diet={preference}'
+    # elif preference in dietary:
+    #     url= f'{base_url}&diet={preference}'
     else:
         url=base_url
     return url
 
-def category_specific_links(preference, page_range=200):
+def category_specific_links(preference, page_range=43):
     '''Given a URL for a category search in BBC GoodFood,
     return a list of specific links for each recipe from
     the categorical search'''
-    recipe_links = []
+
+    # if preference in ['vegetarian','healthy', 'gluten-free','british']:
+    #     page_range=205
+
+    if preference == 'british':
+        page_range = 160
+
+    recipe_links =[]
     for num in range(1, page_range):
         try:
             search_url = preference_based_search(preference) + f'&page={num}'
@@ -36,7 +51,7 @@ def category_specific_links(preference, page_range=200):
             for link in soup.find_all("a", class_="link d-block"):
                 recipe_links.append(f'https://www.bbcgoodfood.com/recipes{link["href"]}')
         except:
-            recipe_links.append('none')
+            recipe_links.append('n')
 
     valid_link =[]
     for link in recipe_links:
@@ -66,8 +81,8 @@ def category_bbc_data(preference):
 
     #here the individual recipe links are pulled and iterated
     for recipe in individual_recipes:
-        #time.sleep(1)
-        response = requests.get(recipe)
+        time.sleep(0.25)
+        response = requests.get(recipe, allow_redirects=False)
         soup = BeautifulSoup(response.content, "html.parser")
 
         #recipe title
@@ -82,10 +97,15 @@ def category_bbc_data(preference):
         try:
             times = soup.find("div", class_= "icon-with-text__children").find_all('time')
             prep_times.append(times[0].text.strip(' mins'))
-            cooking_times.append(times[1].text.strip(' mins'))
         except:
             prep_times.append('n')
+
+        try:
+            times = soup.find("div", class_= "icon-with-text__children").find_all('time')
+            cooking_times.append(times[1].text.strip(' mins'))
+        except:
             cooking_times.append('n')
+
 
         try:
         #star ratings
@@ -106,7 +126,7 @@ def category_bbc_data(preference):
         #servings
         try:
             serving = soup.find("div", class_= "icon-with-text post-header__servings body-copy-small body-copy-bold icon-with-text--aligned").find("div", class_= "icon-with-text__children").string
-        #servings_int = int(serving.strip('Serves '))
+
             servings.append(serving)
         except:
             servings.append("None")
@@ -117,7 +137,6 @@ def category_bbc_data(preference):
             description.append(tagline)
         except:
             description.append('n')
-
 
         #difficulty level
         try:
@@ -144,7 +163,7 @@ def category_bbc_data(preference):
                 ingredient = ingred_group.find_all('a')
                 ingredient_text = ''
             for ing in ingredient:
-                ingredient_text += ingredient.get_text().strip(',') + ', '
+                ingredient_text += ing.get_text().strip(',') + ', '
             only_ingredients.append(ingredient_text)
         except:
             only_ingredients.append('n')
@@ -160,7 +179,9 @@ def category_bbc_data(preference):
         'servings':servings,
         'description':description,
         'specific_ingredients':recipe_ingredients,
-        'ingredients':only_ingredients}
+        'ingredients':only_ingredients
+    }
+
 
     #Dictionary to dataframe
     df = pd.DataFrame.from_dict(category_dictionary)
@@ -179,24 +200,26 @@ def load_data():
     '''merging the dataframes together for the entire dataframe used in
     the replenish modelling and project'''
 
-    column_names = ['recipe_title','stars','prep_times','cooking_times', 'review_count',
-                     'difficulty_level','servings','description', 'ingredients', 'preference']
-    final_df = pd.DataFrame(columns=column_names)
-
     print("Scraping cuisines from BBC Good Foods")
+    all_df_lst = []
 
     for cuisine in cuisines:
         df = category_bbc_data(cuisine)
         df['preference']=cuisine
-        final_df = pd.concat([final_df,df])
+        all_df_lst.append(df)
+
+    print('Scraping done')
 
     print("Scraping dietary recipes from BBC Good Foods")
 
     for diet in dietary:
-        df = category_bbc_data(diet)
-        df['preference']=diet
-        final_df = pd.concat([final_df,df])
+         df = category_bbc_data(diet)
+         df['preference']=diet
+         all_df_lst.append(df)
 
+    final_df = pd.concat(all_df_lst)
+
+    final_df.reset_index(inplace=True)
     print('Finished scraping all')
 
     return final_df

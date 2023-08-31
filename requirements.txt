@@ -14,3 +14,5 @@ seaborn
 
 #modelling
 scikit-learn
+nltk
+
