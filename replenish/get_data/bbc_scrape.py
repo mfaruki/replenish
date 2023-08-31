@@ -159,9 +159,8 @@ def category_bbc_data(preference):
         'difficulty_level':difficulty_level,
         'servings':servings,
         'description':description,
-        'specific_ingredients':recipe_ingredients
-        'ingredients':only_ingredients
-    }
+        'specific_ingredients':recipe_ingredients,
+        'ingredients':only_ingredients}
 
     #Dictionary to dataframe
     df = pd.DataFrame.from_dict(category_dictionary)
