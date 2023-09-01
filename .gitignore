@@ -2,3 +2,6 @@ raw_data/
 .env
 .DS_store
 *Zone.Identifier
+.DS_Store
+.ipynb_checkpoints/
+*cpython-310.pyc

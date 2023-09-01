@@ -27,5 +27,3 @@ df_indian = df_indian[df_indian['servings'] != 'None']
 df_indian['prep_times'] = df_indian['prep_times'].apply(time_cleaner)
 df_indian['cooking_times'] = df_indian['cooking_times'].apply(time_cleaner)
 df_indian['servings'] = df_indian['servings'].apply(serving_cleaner)
-
-df_indian
