@@ -23,15 +23,20 @@ def dietary_functon(bbc_final_df):
 
     #Dropping null rows - ie. n for recipe name
     filtered_df = bbc_final_df[bbc_final_df['recipe_title']!='n']
-
     # Removing duplicates by combining the dietary column
-    grouped_df = filtered_df.groupby('recipe_title').sum()[['dietary']].reset_index()
-    grouped_df.rename(columns = {'dietary':'combined'}, inplace=True)
+    #grouped_df = filtered_df.groupby('recipe_title').sum()[['dietary']].reset_index()
+    #grouped_df.rename(columns = {'dietary':'combined'}, inplace=True)
+    grouped_df = filtered_df.groupby('recipe_title')['dietary'].apply(lambda x: ', '.join(x)).reset_index().rename(columns = {'dietary':'combined'})
+    # grouped_df = filtered_df.groupby('recipe_title').sum()[['dietary']].reset_index()
+    # grouped_df.rename(columns = {'dietary':'combined'}, inplace=True)
+    merged_df = grouped_df.merge(filtered_df, how='left',on='recipe_title')
+    #dropped_df = merged_df.drop(columns = 'dietary')
+    df = merged_df.drop_duplicates('recipe_title')
 
     # Joining combined dietary column to original dataframe and dropping duplicates
-    merged_df = grouped_df.merge(filtered_df,how='left',on='recipe_title')
-    dropped_df = merged_df.drop(columns = 'dietary')
-    df = dropped_df.drop_duplicates('recipe_title')
+    #merged_df = grouped_df.merge(filtered_df,how='left',on='recipe_title')
+    #dropped_df = merged_df.drop(columns = 'dietary')
+    #df = merged_df.drop_duplicates('recipe_title')
     return df
 
 df = dietary_functon(bbc_final_df)
@@ -183,5 +188,7 @@ def gridsearch_graphs(params_df):
     ax[2,2].plot(params_df_max['cluster_ingredient_similarity_metric'])
     ax[2,2].set_title('By max_df: Ingredient Similarity (to maximise)')
     ax[2,2].set_xticklabels(params_df_max['max'],rotation=90)
+
+    fig.savefig('param_charts.pdf')
 
     plt.show()
